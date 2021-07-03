@@ -1,5 +1,4 @@
 import pygame
-import numpy as np
 from pygame.locals import *
 import time
 
@@ -70,7 +69,6 @@ class Board:
         self.height = self.screenSize[1] // self.pixelSize
         self.matrix = [[Number(col, row, 0, self.pixelSize, False) for col in range(self.width)] for row in range(self.height)]
         self.screen = pygame.display.set_mode(self.screenSize, RESIZABLE)
-        self.sameNumber = []
 
     def startGame(self):
         startList = [[5, 3, 0, 0, 7, 0, 0, 0, 0], [6, 0, 0, 1, 9, 5, 0, 0, 0], [0, 9, 8, 0, 0, 0, 0, 6, 0], [8, 0, 0, 0, 6, 0, 0, 0, 3], [4, 0, 0, 8, 0, 3, 0, 0, 1], [7, 0, 0, 0, 2, 0, 0, 0, 6], [0, 6, 0, 0, 0, 0, 2, 8, 0], [0, 0, 0, 4, 1, 9, 0, 0, 5], [0, 0, 0, 0, 8, 0, 0, 7, 9]]
@@ -82,8 +80,6 @@ class Board:
 
         self.topLeftSquareCoords = [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (0, 2), (2, 1), (2, 2)]
         self.topLeftSquare = [self.matrix[0][0], self.matrix[0][1], self.matrix[0][2], self.matrix[1][0], self.matrix[1][1], self.matrix[1][2], self.matrix[0][2], self.matrix[2][1], self.matrix[2][2]]
-        
-        
 
     def drawBoard(self):
 
@@ -112,12 +108,18 @@ class Board:
                     num.updateColor()
             return
 
-        else:
-            for rowIndex, row in enumerate(self.matrix):
-                for colIndex, num in enumerate(row):
-                    if self.currentNum.number == num.number and (rowIndex == self.mousey // self.pixelSize or colIndex == self.mousex // self.pixelSize):
-                        num.fontColor = red
-                        num.updateColor()
+        for rowIndex, row in enumerate(self.matrix):
+            for colIndex, num in enumerate(row):
+                if self.currentNum.number == num.number and (rowIndex == self.mousey // self.pixelSize or colIndex == self.mousex // self.pixelSize):
+                    num.fontColor = red
+                    num.updateColor()
+
+    def checkSameBox(self):
+        for row in self.matrix:
+            for num in row:
+                if self.currentNum.number == num.number and self.currentNum.box == num.box:
+                    num.fontColor = red
+                    num.updateColor()
                         
     def checkNumbers(self):
         self.checkSameRow() 
@@ -125,14 +127,12 @@ class Board:
         self.currentNum.fontColor = blue
         self.currentNum.updateColor()
 
-    
-
     def highlightSame(self):
         (self.mousex, self.mousey) = pygame.mouse.get_pos()
 
         if self.matrix[self.mousey // self.pixelSize][self.mousex // self.pixelSize].number == 0:
-            for rowIndex, row in enumerate(self.matrix):
-                for colIndex, num in enumerate(row):
+            for row in self.matrix:
+                for num in row:
                     num.color = white
             self.matrix[self.mousey // self.pixelSize][self.mousex // self.pixelSize].color = highlight
             return
@@ -156,7 +156,6 @@ class Board:
         while not self.checkGame():
             for event in pygame.event.get():
                 if event.type == QUIT or pygame.key.get_pressed()[pygame.K_ESCAPE]:
-                    #pygame.quit()
                     return
                 if event.type == MOUSEBUTTONDOWN:
                     self.highlightSame()
@@ -183,14 +182,13 @@ class Board:
                             self.currentNum.number = 8
                         elif pygame.key.get_pressed()[pygame.K_KP9] or pygame.key.get_pressed()[pygame.K_9]:
                             self.currentNum.number = 9
-                        elif pygame.key.get_pressed()[pygame.K_BACKSPACE] and self.currentNum.number == 0 or self.currentNum.fontColor == blue:
+                        elif pygame.key.get_pressed()[pygame.K_BACKSPACE] and self.currentNum.number == 0 or self.currentNum.fontColor != black:
                             self.currentNum.number = 0
 
                         if self.currentNum.number > -1:
                             self.checkNumbers()
 
-            self.drawBoard()
-            
+            self.drawBoard() 
             pygame.display.flip()
 
 board = Board()
